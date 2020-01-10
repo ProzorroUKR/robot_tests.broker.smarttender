@@ -625,21 +625,6 @@ check for open screen
 	webclient.header натиснути на елемент за назвою  OK
 
 
-знайти звіт про укладений договір у webclient
-    [Arguments]  ${tender_uaid}
-	${location}  get location
-	${grid_search_field}  set variable  xpath=((//*[@data-type="GridView"])[1]//td//input)[4]
-	run keyword if  '/webclient/' not in '${location}'  run keywords
-	...  go to  http://test.smarttender.biz/webclient/?testmode=1&proj=it_uk&tz=3  AND
-	...  loading дочекатись закінчення загрузки сторінки        AND
-	...  webclient.робочий стіл натиснути на елемент за назвою  Звіт про укладений договір(тестові)  AND
-	...  webclient.header натиснути на елемент за назвою  Очистити    AND
-	...  webclient.header натиснути на елемент за назвою  OK          AND
-	...  loading дочекатися відображення елемента на сторінці  ${grid_search_field}   AND
-	...  заповнити simple input  ${grid_search_field}  ${tender_uaid}   AND
-	...  loading дочекатись закінчення загрузки сторінки
-
-
 знайти план у webclient
 	[Arguments]  ${tender_uaid}
 	${location}  get location

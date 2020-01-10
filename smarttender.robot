@@ -2933,7 +2933,7 @@ _перейти до сторінки вимоги_кваліфікація
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
     run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
-    ...  знайти звіт про укладений договір у webclient  ${tender_uaid}  AND
+    ...  знайти тендер у webclient  ${tender_uaid}  AND
 	...  активувати вкладку  Пропозиції  index=2  AND
 	...  grid вибрати рядок за номером  ${contract_index}+1  AND
 	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
