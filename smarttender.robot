@@ -1225,7 +1225,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
 	smarttender.сторінка_торгів виконати пошук
 	${status}  run keyword and return status  smarttender.сторінка_торгів перейти за першим результатом пошуку
-	run keyword if  not ${status}  Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}  ${second_stage_data}
+	run keyword if  not ${status}  smarttender.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}  ${second_stage_data}
 	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid
 	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 	set global variable  ${tender_uaid}
