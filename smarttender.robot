@@ -695,11 +695,14 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
     ##########################################################
 
 	# ОСНОВНІ ПОЛЯ
+	${amount}  set variable  ${tender_data['value']['amount']}
 	${mainProcurementCategory}  set variable  ${tender_data['mainProcurementCategory']}
 	${title}  set variable  ${tender_data['title']}
 	${description}  set variable  ${tender_data['description']}
 	${cause}  set variable  ${tender_data['cause']}
 	${cause_description}  set variable  ${tender_data['causeDescription']}
+
+    заповнити поле value.amount  ${amount}
 
 	:FOR  ${field}  in
 	...  mainProcurementCategory
@@ -1046,6 +1049,7 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 
 	:FOR  ${field}  in  @{field_list}
 	\  run keyword  webclient.заповнити поле для item ${field}  ${${field}}
+	capture page screenshot
 
 
 додати якісні показники
@@ -1220,7 +1224,8 @@ ${hub_url}                              http://autotest.it.ua:4445/wd/hub
 	smarttender.перейти до тестових торгів
 	smarttender.сторінка_торгів ввести текст в поле пошуку  ${tender_uaid}
 	smarttender.сторінка_торгів виконати пошук
-	smarttender.сторінка_торгів перейти за першим результатом пошуку
+	${status}  run keyword and return status  smarttender.сторінка_торгів перейти за першим результатом пошуку
+	run keyword if  not ${status}  Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}  ${second_stage_data}
 	${taken_tender_uaid}  smarttender.сторінка_детальної_інформації отримати tender_uaid
 	should be equal as strings  ${taken_tender_uaid}  ${tender_uaid}
 	set global variable  ${tender_uaid}
@@ -2939,15 +2944,10 @@ _закарити сповіщення про кваліфікацію за не
 Редагувати угоду
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldname}  ${fieldvalue}
     [Documentation]  Змінює поле fieldname угоди тендера tender_uaid на fieldvalue
-    run keyword if  '${fieldname}' == 'value.amountNet'  run keywords
-    ...  знайти тендер у webclient  ${tender_uaid}  AND
-	...  активувати вкладку  Пропозиції  AND
-	...  grid вибрати рядок за номером  ${contract_index}+1  AND
-	#...  header натиснути на елемент за назвою  Надіслати вперед  AND
-    ...  header натиснути на елемент за назвою  Прикріпити договір
-    run keyword  webclient.заповнити поле для угоди ${fieldname}  ${fieldvalue}
+    comment  заполняем поля в кейворде Підтвердити підписання контракту continue
     run keyword if  '${fieldname}' == 'value.amountNet'  set global variable  ${contract value.amountNet}  ${fieldvalue}
     run keyword if  '${fieldname}' == 'value.amount'     set global variable  ${contract value.amount}     ${fieldvalue}
+
 
 Встановити дату підписання угоди
     [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${fieldvalue}
@@ -2973,20 +2973,14 @@ _закарити сповіщення про кваліфікацію за не
 Підтвердити підписання контракту
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
     [Documentation]  Перевести договір під номером contract_num до тендера tender_uaid в статус active.
-    run keyword if
-    ...  "${mode}" == "reporting"  smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
-    ...  ELSE  run keywords
-    ...  repeat keyword  2 times   sleep  4m     AND
-    ...                            smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
+    ${ignore_TK}  set variable  Неможливість укласти угоду для переговорної процедури поки не пройде stand-still період
+    run keyword if  "${mode}" != "reporting" and "${ignore_TK}" != "${TEST_NAME}"  sleep  8m
+    smarttender.Підтвердити підписання контракту continue  ${username}  ${tender_uaid}  ${contract_num}
 
 
 Підтвердити підписання контракту continue
     [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
-    #  Відкриваємо модалку
-    click element   ${screen_root_selector}//*[@alt="Close"]
-	loading дочекатись закінчення загрузки сторінки
-    header натиснути на елемент за назвою  Прикріпити договір
-    ########################################################
+    Відкрити вікно прикріплення договору
     #  Заповнюємо поля договору
 	${id}  evaluate  str(uuid.uuid4())  uuid
 	заповнити поле для угоди id  ${id}
@@ -3078,7 +3072,7 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити simple input  //*[@data-name="NORG_DOC"]//input  ${identifier.legalName}
 	заповнити autocomplete field  //*[@data-name="IDSCALE"]//input  ${scale_dict['${scale}']}
 	заповнити simple input  //*[@data-name="CONTACTPERSON"]//input  ${contactPoint.name}
-    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
+    заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}${space}${space}${space}
     clear input by Backspace  //*[@data-name="TEL"]//input
 	заповнити simple input  //*[@data-name="TEL"]//input  ${contactPoint.telephone}  check=${False}
 	заповнити simple input  //*[@data-name="EMAIL"]//input  ${contactPoint.email}    check=${False}
@@ -3086,7 +3080,7 @@ _закарити сповіщення про кваліфікацію за не
 	заповнити simple input  //*[@data-name="PIND"]//input  ${address.postalCode}
 	заповнити simple input  //*[@data-name="APOTR"]//input  ${address.streetAddress}
 	заповнити autocomplete field  //*[@data-name="CITY_KOD"]//input  ${address.locality}  check=${False}
-	clear input by Backspace  //*[@data-name="AMOUNT"]//input
+	# todo написать отдельный ввод для этого поля если еще раз упадет
 	заповнити simple input    //*[@data-name="AMOUNT"]//input  ${value.amount}  check=${False}
 	операція над чекбоксом  ${value.valueAddedTaxIncluded}  //*[@data-name="WITHVAT"]//input
 
@@ -3114,9 +3108,13 @@ _закарити сповіщення про кваліфікацію за не
 	...  webclient.header натиснути на елемент за назвою  Визнати учасника переможцем
 
 	wait until keyword succeeds  10  1  dialog box заголовок повинен містити  Увага!
+	# текст в диалоговом окне - Після прийняття рішення, коригувати дані про учасника буде неможливо. Ви впевнені у своєму виборі?
 	dialog box натиснути кнопку  Так
-	dialog box заголовок повинен містити  Накласти ЕЦП/КЕП на рішення по пропозиції?
-	dialog box натиснути кнопку  Ні
+	${status}  run keyword and return status  Підписати ЕЦП(webclient)
+	run keyword if  ${status}
+	...  log  ЕЦП накладено  WARN
+	...  ELSE
+	...  log  ЕЦП НЕ накладено WARN
 
 
 Створити план
