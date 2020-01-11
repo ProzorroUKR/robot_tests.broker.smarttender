@@ -1761,8 +1761,7 @@ _отримати дані адреси донора
     [Arguments]  ${field_name}=None
 	${selector}  set variable  xpath=//*[@data-qa="nbu-discount-rate"]//*[@data-qa="value"]
 	${value_in_smart_format}  get text  ${selector}
-	${field_value_in_smart_format}  set variable  ${value_in_smart_format.replace("%", "").replace(",", ".")}
-    ${field_value}  evaluate  float(${field_value_in_smart_format.replace("%", "").replace(",", ".")}) / 100
+    ${field_value}  evaluate  float("${value_in_smart_format}".strip("%").replace(",", ".")) / 100
 	[Return]  ${field_value}
 
 
