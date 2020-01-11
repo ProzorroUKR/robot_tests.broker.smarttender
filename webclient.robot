@@ -110,6 +110,7 @@ ${sign btn}                         //*[@id="eds_placeholder"]//*[contains(@clas
 
 заповнити поле NBUdiscountRate
 	[Arguments]  ${text}
+	${text}  evaluate  float(${text}) * 100
 	${locator}  set variable  //*[@data-name="NBUDISCRAT"]//input
 	clear input by Backspace  ${locator}
 	заповнити autocomplete field  ${locator}  ${text.__str__()}  check=${False}
